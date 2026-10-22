@@ -223,6 +223,10 @@ a:hover { color: var(--cranberry); }
   background: var(--c);
   opacity: 0;
   transform: translateY(-380px);
+  /* Saída: some de cima para baixo (a camada do topo, --i 11, primeiro) e só
+     depois volta para cima, invisível, pronta para cair de novo. */
+  transition: opacity .35s ease calc((11 - var(--i)) * .2s),
+              transform 0s linear calc((11 - var(--i)) * .2s + .35s);
 }
 
 .layer--last { border-radius: 8px 8px 20px 20px; }
@@ -242,38 +246,33 @@ a:hover { color: var(--cranberry); }
 
 .labels li { opacity: 0; transform: translateX(-10px); }
 
-.layers.is-visible .layer {
-  animation: drop 8s cubic-bezier(.3, 1.4, .5, 1) infinite both;
-  animation-delay: calc(var(--i) * .22s);
+.layers.is-built .layer {
+  opacity: 1;
+  transform: translateY(0);
+  /* Entrada: cai de baixo para cima (a camada do fundo, --i 0, primeiro). */
+  transition: opacity .2s ease calc(var(--i) * .22s),
+              transform .7s cubic-bezier(.3, 1.4, .5, 1) calc(var(--i) * .22s);
 }
 
-.layers.is-visible .labels li {
-  animation: label-in 8s ease-out infinite both;
-  animation-delay: calc(var(--i) * .22s + .15s);
+.labels li {
+  transition: opacity .35s ease calc((11 - var(--i)) * .2s),
+              transform .35s ease calc((11 - var(--i)) * .2s);
 }
 
-.layers.is-visible .pouch { animation: settle 8s ease-in-out infinite; }
-
-/* Cada camada cai, fica montada e some antes do próximo ciclo. */
-@keyframes drop {
-  0% { opacity: 0; transform: translateY(-380px); }
-  9% { opacity: 1; transform: translateY(0); }
-  84% { opacity: 1; transform: translateY(0); }
-  94%, 100% { opacity: 0; transform: translateY(0); }
-}
-
-@keyframes label-in {
-  0%, 3% { opacity: 0; transform: translateX(-10px); }
-  9% { opacity: 1; transform: translateX(0); }
-  84% { opacity: 1; transform: translateX(0); }
-  94%, 100% { opacity: 0; transform: translateX(0); }
+.layers.is-built .labels li {
+  opacity: 1;
+  transform: translateX(0);
+  transition: opacity .5s ease-out calc(var(--i) * .22s + .15s),
+              transform .5s ease-out calc(var(--i) * .22s + .15s);
 }
 
 /* Pacote dá um leve balanço quando a última camada assenta. */
+.layers.is-built .pouch { animation: settle .6s ease-in-out 2.9s; }
+
 @keyframes settle {
-  0%, 38%, 50%, 100% { transform: rotate(0); }
-  42% { transform: rotate(-1.5deg); }
-  46% { transform: rotate(1deg); }
+  0%, 100% { transform: rotate(0); }
+  35% { transform: rotate(-1.5deg); }
+  70% { transform: rotate(1deg); }
 }
 
 /* Order */
