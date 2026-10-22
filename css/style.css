@@ -243,17 +243,38 @@ a:hover { color: var(--cranberry); }
 .labels li { opacity: 0; transform: translateX(-10px); }
 
 .layers.is-visible .layer {
-  animation: drop .7s cubic-bezier(.3, 1.4, .5, 1) forwards;
+  animation: drop 8s cubic-bezier(.3, 1.4, .5, 1) infinite both;
   animation-delay: calc(var(--i) * .22s);
 }
 
 .layers.is-visible .labels li {
-  animation: label-in .5s ease-out forwards;
-  animation-delay: calc(var(--i) * .22s + .2s);
+  animation: label-in 8s ease-out infinite both;
+  animation-delay: calc(var(--i) * .22s + .15s);
 }
 
-@keyframes drop { to { opacity: 1; transform: translateY(0); } }
-@keyframes label-in { to { opacity: 1; transform: translateX(0); } }
+.layers.is-visible .pouch { animation: settle 8s ease-in-out infinite; }
+
+/* Cada camada cai, fica montada e some antes do próximo ciclo. */
+@keyframes drop {
+  0% { opacity: 0; transform: translateY(-380px); }
+  9% { opacity: 1; transform: translateY(0); }
+  84% { opacity: 1; transform: translateY(0); }
+  94%, 100% { opacity: 0; transform: translateY(0); }
+}
+
+@keyframes label-in {
+  0%, 3% { opacity: 0; transform: translateX(-10px); }
+  9% { opacity: 1; transform: translateX(0); }
+  84% { opacity: 1; transform: translateX(0); }
+  94%, 100% { opacity: 0; transform: translateX(0); }
+}
+
+/* Pacote dá um leve balanço quando a última camada assenta. */
+@keyframes settle {
+  0%, 38%, 50%, 100% { transform: rotate(0); }
+  42% { transform: rotate(-1.5deg); }
+  46% { transform: rotate(1deg); }
+}
 
 /* Order */
 

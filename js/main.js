@@ -55,7 +55,10 @@ if ('IntersectionObserver' in window) {
     entradas.forEach((entrada) => {
       if (entrada.isIntersecting) {
         entrada.target.classList.add('is-visible');
-        observer.unobserve(entrada.target);
+        // As camadas recomeçam a montagem toda vez que a seção volta à tela.
+        if (!entrada.target.hasAttribute('data-layers')) observer.unobserve(entrada.target);
+      } else if (entrada.target.hasAttribute('data-layers')) {
+        entrada.target.classList.remove('is-visible');
       }
     });
   }, { threshold: 0.3 });
