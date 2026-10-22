@@ -1,0 +1,68 @@
+name: Vídeo Oferta
+
+# Gera o Reels "Oferta" (MP4 1080x1920, 15 s) com os textos preenchidos no formulário.
+# Actions › Vídeo Oferta › Run workflow. Campos em branco usam o texto padrão do modelo.
+on:
+  workflow_dispatch:
+    inputs:
+      gancho:
+        description: "Gancho (letras grandes)"
+        required: false
+      gancho_destaque:
+        description: "Complemento em itálico"
+        required: false
+      preco:
+        description: "Preço em reais, só o número (ex.: 17)"
+        required: false
+      entrega:
+        description: "Selo vermelho de entrega"
+        required: false
+      chamada_topo:
+        description: "Chamada, primeira linha (ex.: Comente)"
+        required: false
+      chamada_destaque:
+        description: "Chamada em destaque (ex.: QUERO)"
+        required: false
+      subchamada:
+        description: "Frase abaixo da chamada"
+        required: false
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: videos
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: videos/package-lock.json
+      - run: npm ci
+      - run: npx remotion browser ensure
+      - name: Montar os textos
+        env:
+          GANCHO: ${{ inputs.gancho }}
+          GANCHO_DESTAQUE: ${{ inputs.gancho_destaque }}
+          PRECO: ${{ inputs.preco }}
+          ENTREGA: ${{ inputs.entrega }}
+          CHAMADA_TOPO: ${{ inputs.chamada_topo }}
+          CHAMADA_DESTAQUE: ${{ inputs.chamada_destaque }}
+          SUBCHAMADA: ${{ inputs.subchamada }}
+        run: |
+          node -e '
+            const e = process.env, p = {};
+            const campos = { gancho: "GANCHO", ganchoDestaque: "GANCHO_DESTAQUE", entrega: "ENTREGA",
+              chamadaTopo: "CHAMADA_TOPO", chamadaDestaque: "CHAMADA_DESTAQUE", subchamada: "SUBCHAMADA" };
+            for (const [k, v] of Object.entries(campos)) if (e[v] && e[v].trim()) p[k] = e[v].trim();
+            if (e.PRECO && e.PRECO.trim()) p.preco = parseInt(e.PRECO, 10);
+            require("fs").writeFileSync("props.json", JSON.stringify(p, null, 2));
+            console.log(p);
+          '
+      - run: npx remotion render Oferta out/oferta.mp4 --props=props.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: oferta-${{ github.run_number }}
+          path: videos/out/oferta.mp4
