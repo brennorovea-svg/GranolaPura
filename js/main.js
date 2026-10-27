@@ -177,3 +177,48 @@ if ('IntersectionObserver' in window) {
 }
 
 document.getElementById('ano').textContent = new Date().getFullYear();
+
+// Tag da Neon Scripts: a placa liga uma vez quando aparece e depois, a cada
+// 2,6 a 6 s, pisca uma letra ou a placa toda, e às vezes rosa e azul trocam.
+// Só roda com a placa na tela e a aba visível.
+const neonTag = document.querySelector('.neon-tag');
+const semMovimento = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+if (neonTag && !semMovimento && 'IntersectionObserver' in window) {
+  const palavras = neonTag.querySelectorAll('.neon-tag__word');
+  const letras = neonTag.querySelectorAll('.neon-tag__word span');
+  let timer = null;
+
+  const piscar = (el) => {
+    el.classList.remove('is-blink');
+    void el.offsetWidth;
+    el.classList.add('is-blink');
+  };
+
+  const tick = () => {
+    if (!document.hidden) {
+      const r = Math.random();
+      if (r < 0.45) piscar(letras[Math.floor(Math.random() * letras.length)]);
+      else if (r < 0.7) palavras.forEach(piscar);
+      else { palavras.forEach(piscar); neonTag.classList.toggle('is-azul'); }
+    }
+    timer = setTimeout(tick, 2600 + Math.random() * 3400);
+  };
+
+  neonTag.classList.add('is-off');
+  const observerNeon = new IntersectionObserver(([entrada]) => {
+    if (entrada.isIntersecting) {
+      if (neonTag.classList.contains('is-off')) {
+        neonTag.classList.replace('is-off', 'is-on');
+        timer = setTimeout(tick, 2400);
+      } else if (!timer) {
+        timer = setTimeout(tick, 2600);
+      }
+    } else {
+      clearTimeout(timer);
+      timer = null;
+    }
+  }, { threshold: 0.5 });
+  observerNeon.observe(neonTag);
+  window.addEventListener('pagehide', () => { clearTimeout(timer); observerNeon.disconnect(); });
+}
