@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Granola Pura · Granola artesanal em São Paulo</title>
-  <meta name="description" content="Granola artesanal feita à mão em São Paulo. 12 ingredientes, pacote de 200 g por R$ 17,00. Peça pelo WhatsApp.">
+  <meta name="description" content="Granola artesanal feita à mão em São Paulo. 12 ingredientes, pacote de 200 g por R$ 17,00. Peça pelo site e receba em casa.">
   <meta name="theme-color" content="#D9AC72">
   <meta property="og:type" content="website">
   <meta property="og:title" content="Granola Pura">
@@ -128,20 +128,58 @@
                   <output id="qtd" aria-live="polite">1</output>
                   <button type="button" data-qty="1" aria-label="Aumentar quantidade">+</button>
                 </div>
-                <p>Total: <strong id="total">R$ 17,00</strong></p>
+                <p>Produtos: <strong id="subtotal">R$ 17,00</strong></p>
               </div>
             </div>
-            <label class="field">CEP de entrega
-              <input type="text" id="cep" inputmode="numeric" autocomplete="postal-code" placeholder="00000-000" maxlength="9">
-            </label>
-            <label class="field">Seu nome
-              <input type="text" id="nome" autocomplete="name" placeholder="Como podemos te chamar">
-            </label>
-            <a href="https://wa.me/5511948177429" id="wa-link" target="_blank" rel="noopener" class="btn btn--dark btn--lg field--full">
-              <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 1-13.5 7.8L3 21l1.3-4.4A9 9 0 1 1 21 12z"/></svg>
-              Pedir pelo WhatsApp
-            </a>
-            <p class="field--full form__note">O WhatsApp abre com o pedido já escrito. É só enviar: o frete e o pagamento são combinados por lá.</p>
+
+            <div class="field field--full">
+              <label for="cep">CEP de entrega</label>
+              <div class="cep-row">
+                <input type="text" id="cep" name="cep" inputmode="numeric" autocomplete="postal-code" placeholder="00000-000" maxlength="9" required>
+                <button type="button" id="calcular-frete" class="btn btn--dark">Calcular frete</button>
+              </div>
+              <p class="frete" id="frete" role="status" aria-live="polite"></p>
+            </div>
+
+            <fieldset class="entrega field--full" id="entrega" hidden>
+              <legend class="field__label">Entrega</legend>
+              <label class="field field--full">Rua
+                <input type="text" id="logradouro" name="logradouro" autocomplete="address-line1" required>
+              </label>
+              <label class="field">Número
+                <input type="text" id="numero" name="numero" autocomplete="address-line2" required>
+              </label>
+              <label class="field">Complemento
+                <input type="text" id="complemento" name="complemento" placeholder="Apto, bloco, casa">
+              </label>
+              <label class="field field--full">Bairro
+                <input type="text" id="bairro" name="bairro" autocomplete="address-level3" required>
+              </label>
+              <label class="field field--full">Seu nome
+                <input type="text" id="nome" name="nome" autocomplete="name" required>
+              </label>
+              <label class="field">E-mail
+                <input type="email" id="email" name="email" autocomplete="email" required>
+              </label>
+              <label class="field">Celular com DDD
+                <input type="tel" id="telefone" name="telefone" autocomplete="tel" inputmode="tel" placeholder="(11) 90000-0000" required>
+              </label>
+              <label class="field field--full">Observações para a entrega (opcional)
+                <input type="text" id="observacoes" name="observacoes" maxlength="300" placeholder="Portaria, melhor horário…">
+              </label>
+
+              <dl class="resumo field--full">
+                <div><dt>Produtos</dt><dd id="resumo-produtos">R$ 17,00</dd></div>
+                <div><dt>Entrega</dt><dd id="resumo-frete">–</dd></div>
+                <div class="resumo__total"><dt>Total</dt><dd id="resumo-total">–</dd></div>
+              </dl>
+
+              <button type="submit" id="pagar" class="btn btn--dark btn--lg field--full">Ir para o pagamento</button>
+              <p class="field--full form__note">Pagamento seguro pelo Mercado Pago, com Pix ou cartão. A confirmação chega no seu e-mail.</p>
+            </fieldset>
+
+            <p class="field--full form__erro" id="form-erro" role="alert"></p>
+            <p class="field--full form__note">Dúvidas? <a href="https://wa.me/5511948177429" target="_blank" rel="noopener">Fale com a gente no WhatsApp</a>.</p>
           </form>
         </div>
       </div>
@@ -191,6 +229,7 @@
     </div>
   </footer>
 
+  <script src="js/config.js" defer></script>
   <script src="js/main.js" defer></script>
 </body>
 </html>

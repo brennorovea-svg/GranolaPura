@@ -342,6 +342,35 @@ a:hover { color: var(--cranberry); }
 
 .form__note { margin: 0; font-size: 14px; font-weight: 400; color: var(--muted); }
 
+.cep-row { display: flex; gap: 10px; flex-wrap: wrap; }
+.cep-row input { flex: 1 1 140px; min-width: 0; }
+.cep-row .btn { min-height: 44px; border: none; font: inherit; font-weight: 700; cursor: pointer; }
+
+.frete { margin: 0; min-height: 1.4em; font-size: 15px; font-weight: 400; }
+.frete:empty { display: none; }
+
+.entrega {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin: 0;
+  padding: 16px 0 0;
+  border: none;
+  border-top: 1.5px dashed var(--ink);
+}
+.entrega[hidden] { display: none; }
+.entrega legend { float: left; width: 100%; padding: 0; margin-bottom: 4px; font-size: 14px; font-weight: 700; }
+
+.resumo { margin: 0; display: grid; gap: 6px; font-size: 16px; }
+.resumo div { display: flex; justify-content: space-between; gap: 12px; }
+.resumo dt, .resumo dd { margin: 0; }
+.resumo__total { padding-top: 8px; border-top: 1.5px solid var(--ink); font-weight: 700; font-size: 19px; }
+
+.order__form button.btn--lg { border: none; font: inherit; font-size: 17px; font-weight: 700; cursor: pointer; }
+.order__form .btn:disabled { opacity: .6; cursor: progress; transform: none; }
+.form__erro { margin: 0; font-size: 15px; font-weight: 700; color: var(--cranberry); }
+.form__erro:empty { display: none; }
+
 /* Gallery */
 
 .gallery { background: var(--cream); border-top: 2px solid var(--ink); }
@@ -432,6 +461,72 @@ a:hover { color: var(--cranberry); }
   .gal { justify-content: flex-start; overflow-x: auto; scroll-snap-type: x mandatory; padding-inline: var(--gutter); }
   .gal__item { flex: 0 0 72%; scroll-snap-align: center; }
 }
+
+/* Páginas internas: acompanhamento do pedido e painel */
+
+.pagina { background: var(--kraft); }
+.pagina .header button.btn { border: none; font: inherit; font-weight: 700; cursor: pointer; }
+.pagina__main { max-width: 760px; padding-top: 24px; display: flex; flex-direction: column; gap: 24px; }
+.pagina__kicker { margin: 0; font-size: 24px; }
+.pagina__texto { margin: 0; font-size: 18px; line-height: 1.55; }
+
+.cartao {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: clamp(20px, 4vw, 36px);
+  background: var(--cream);
+  border: 2px solid var(--ink);
+  border-radius: 20px;
+}
+.cartao[hidden], .pagina section[hidden] { display: none; }
+.cartao .display { font-size: clamp(40px, 7vw, 72px); }
+
+.linha { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.linha li { display: flex; align-items: center; gap: 12px; color: var(--muted); }
+.linha li::before {
+  content: "";
+  flex: 0 0 18px;
+  height: 18px;
+  border: 2px solid var(--ink);
+  border-radius: 50%;
+  background: var(--white);
+}
+.linha li.is-feito { color: var(--ink); font-weight: 700; }
+.linha li.is-feito::before { background: var(--cranberry); }
+
+.painel__login { display: grid; gap: 14px; }
+.painel__login .btn { border: none; font: inherit; font-size: 17px; font-weight: 700; cursor: pointer; }
+.btn[hidden] { display: none; }
+.painel__topo { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: end; gap: 16px; }
+.painel__topo .display { font-size: clamp(40px, 7vw, 72px); }
+.painel__filtros { display: flex; gap: 6px; flex-wrap: wrap; }
+.painel__filtros button {
+  min-height: 40px;
+  padding: 0 16px;
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  background: var(--cream);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+.painel__filtros button.is-ativo { background: var(--ink); color: var(--cream); }
+.painel__lista { display: grid; gap: 16px; }
+
+.pedido { gap: 10px; }
+.pedido p { margin: 0; line-height: 1.5; }
+.pedido__topo { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; align-items: center; }
+.pedido__qtd { font-size: 20px; font-weight: 700; }
+.pedido__obs:empty { display: none; }
+.pedido__status { padding: 4px 12px; border-radius: 999px; font-size: 13px; font-weight: 700; background: var(--honey); }
+.pedido__status[data-status="saiu_para_entrega"] { background: var(--kraft-light); }
+.pedido__status[data-status="entregue"] { background: var(--ink); color: var(--cream); }
+.pedido__status[data-status="cancelado"] { background: var(--cranberry); color: var(--cream); }
+.pedido__acoes { display: flex; gap: 10px; flex-wrap: wrap; }
+.pedido__acoes:empty { display: none; }
+.pedido__acoes .btn { border: none; font: inherit; font-weight: 700; cursor: pointer; }
+.pedido__acoes .btn:disabled { opacity: .6; cursor: progress; }
 
 /* Respect reduced motion */
 
