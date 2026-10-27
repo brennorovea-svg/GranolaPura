@@ -401,6 +401,64 @@ a:hover { color: var(--cranberry); }
 .footer__links a { color: var(--cream); }
 .footer__copy { margin: 0; font-size: 13px; color: #CBBBA8; }
 
+/* Crédito Neon Scripts */
+
+.footer__credit {
+  display: flex;
+  justify-content: center;
+  padding-block: 18px 28px;
+  border-top: 1px dashed rgba(217, 172, 114, .35);
+}
+
+.neon-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  color: #CBBBA8;
+}
+
+.neon-tag__lead { font-family: var(--serif); font-style: italic; font-size: 17px; }
+
+.neon-tag__stamp {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 10px 4px;
+  border: 1.5px solid var(--kraft);
+  border-radius: 3px;
+  font-family: var(--display);
+  font-size: 14px;
+  letter-spacing: .12em;
+  color: var(--kraft);
+  transform: rotate(-2deg);
+  transition: color .3s ease, border-color .3s ease, text-shadow .3s ease;
+}
+
+.neon-tag__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--honey);
+  box-shadow: 0 0 6px var(--honey), 0 0 12px rgba(242, 198, 107, .6);
+  animation: neon-blink 2.4s ease-in-out infinite;
+}
+
+.neon-tag:hover .neon-tag__stamp {
+  color: var(--honey);
+  border-color: var(--honey);
+  text-shadow: 0 0 8px rgba(242, 198, 107, .55);
+}
+
+@keyframes neon-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .35; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .neon-tag__dot { animation: none; }
+}
+
 /* Reveal on scroll */
 
 .reveal { opacity: 0; transform: translateY(28px); transition: opacity .8s ease, transform .8s cubic-bezier(.2, .8, .2, 1); }
