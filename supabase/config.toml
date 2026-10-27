@@ -1,0 +1,19 @@
+# Configuração do Supabase CLI para a loja da Granola Pura.
+project_id = "granola-pura"
+
+# As funções são chamadas pelo site com a chave publicável (que não é um JWT)
+# e pelo Mercado Pago, que não manda token. Cada função faz a própria checagem.
+[functions.cotar-frete]
+verify_jwt = false
+
+[functions.criar-pedido]
+verify_jwt = false
+
+[functions.webhook-mercadopago]
+verify_jwt = false
+
+[functions.status-pedido]
+verify_jwt = false
+
+[functions.atualizar-status]
+verify_jwt = false

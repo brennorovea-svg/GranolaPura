@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Painel de pedidos · Granola Pura</title>
+  <meta name="robots" content="noindex">
+  <meta name="theme-color" content="#D9AC72">
+  <link rel="icon" href="img/icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="pagina">
+  <header class="header">
+    <a href="./" aria-label="Granola Pura, início"><img src="img/logo.png" alt="Granola Pura" class="header__logo" width="333" height="400"></a>
+    <button type="button" class="btn btn--dark" id="sair" hidden>Sair</button>
+  </header>
+
+  <main class="wrap pagina__main">
+    <section class="cartao" id="login" hidden>
+      <h1 class="display">PAINEL</h1>
+      <p class="pagina__texto">Digite o seu e-mail. Vamos mandar um link para entrar.</p>
+      <form class="painel__login" id="login-form">
+        <label class="field">E-mail
+          <input type="email" id="login-email" autocomplete="email" required>
+        </label>
+        <button type="submit" class="btn btn--dark btn--lg">Receber o link</button>
+        <p class="form__note" id="login-msg" role="status"></p>
+      </form>
+    </section>
+
+    <section id="pedidos" hidden>
+      <div class="painel__topo">
+        <h1 class="display">PEDIDOS</h1>
+        <div class="painel__filtros" role="tablist">
+          <button type="button" class="is-ativo" data-filtro="abertos">A entregar</button>
+          <button type="button" data-filtro="entregue">Entregues</button>
+          <button type="button" data-filtro="todos">Todos</button>
+        </div>
+      </div>
+      <p class="form__erro" id="painel-erro" role="alert"></p>
+      <div class="painel__lista" id="lista"></div>
+    </section>
+  </main>
+
+  <template id="tpl-pedido">
+    <article class="cartao pedido">
+      <header class="pedido__topo">
+        <p><strong data-campo="codigo"></strong> · <span data-campo="quando"></span></p>
+        <span class="pedido__status" data-campo="status"></span>
+      </header>
+      <p class="pedido__qtd" data-campo="itens"></p>
+      <p><strong data-campo="nome"></strong><br><a data-campo="telefone" target="_blank" rel="noopener"></a> · <span data-campo="email"></span></p>
+      <p data-campo="endereco"></p>
+      <p class="pedido__obs" data-campo="observacoes"></p>
+      <div class="pedido__acoes"></div>
+    </article>
+  </template>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/painel.js" defer></script>
+</body>
+</html>

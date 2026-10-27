@@ -1,38 +1,34 @@
-// Granola Pura: pedido pelo WhatsApp e animações de entrada.
+// Granola Pura: checkout (frete, dados de entrega e pagamento) e animações de entrada.
 
-const WHATSAPP = '5511948177429';
-const PRECO = 17;
+const PRECO = 1700; // centavos; o valor que vale é o das funções da loja
+const QTD_MAX = 20;
+const FUNCOES = window.LOJA.funcoes;
 
-const state = { qtd: 1 };
+const state = { qtd: 1, frete: null };
 
-const qtdEl = document.getElementById('qtd');
-const totalEl = document.getElementById('total');
-const cepEl = document.getElementById('cep');
-const nomeEl = document.getElementById('nome');
-const waLink = document.getElementById('wa-link');
+const $ = (id) => document.getElementById(id);
+const form = $('order-form');
+const cepEl = $('cep');
+const freteEl = $('frete');
+const entregaEl = $('entrega');
+const erroEl = $('form-erro');
+const pagarEl = $('pagar');
 
-const brl = (valor) => valor.toFixed(2).replace('.', ',');
-
-function mensagem() {
-  const qtd = state.qtd;
-  return [
-    'Olá! Quero pedir Granola Pura pelo site.',
-    `Quantidade: ${qtd} ${qtd > 1 ? 'pacotes' : 'pacote'} de 200 g`,
-    `Total dos produtos: R$ ${brl(PRECO * qtd)}`,
-    `CEP: ${cepEl.value || '(vou informar)'}`,
-    `Nome: ${nomeEl.value.trim() || '(vou informar)'}`,
-  ].join('\n');
-}
+const esc = (t) => String(t).replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
+const brl = (centavos) => (centavos / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
 function atualizar() {
-  qtdEl.textContent = state.qtd;
-  totalEl.textContent = `R$ ${brl(PRECO * state.qtd)}`;
-  waLink.href = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(mensagem())}`;
+  const produtos = PRECO * state.qtd;
+  $('qtd').textContent = state.qtd;
+  $('subtotal').textContent = brl(produtos);
+  $('resumo-produtos').textContent = brl(produtos);
+  $('resumo-frete').textContent = state.frete ? brl(state.frete.frete_centavos) : '–';
+  $('resumo-total').textContent = state.frete ? brl(produtos + state.frete.frete_centavos) : '–';
 }
 
 document.querySelectorAll('[data-qty]').forEach((botao) => {
   botao.addEventListener('click', () => {
-    state.qtd = Math.min(50, Math.max(1, state.qtd + Number(botao.dataset.qty)));
+    state.qtd = Math.min(QTD_MAX, Math.max(1, state.qtd + Number(botao.dataset.qty)));
     atualizar();
   });
 });
@@ -40,10 +36,94 @@ document.querySelectorAll('[data-qty]').forEach((botao) => {
 cepEl.addEventListener('input', () => {
   const d = cepEl.value.replace(/\D/g, '').slice(0, 8);
   cepEl.value = d.length > 5 ? `${d.slice(0, 5)}-${d.slice(5)}` : d;
-  atualizar();
+  // CEP mudou: o frete calculado antes não vale mais.
+  if (state.frete && state.frete.endereco.cep !== cepEl.value) {
+    state.frete = null;
+    entregaEl.hidden = true;
+    freteEl.textContent = '';
+    atualizar();
+  }
+  if (d.length === 8 && !state.frete) calcularFrete();
 });
 
-nomeEl.addEventListener('input', atualizar);
+async function chamar(funcao, opcoes) {
+  const r = await fetch(`${FUNCOES}/${funcao}`, opcoes);
+  const dados = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(dados.erro || 'Algo deu errado. Tente de novo.');
+  return dados;
+}
+
+async function calcularFrete() {
+  const cep = cepEl.value.replace(/\D/g, '');
+  erroEl.textContent = '';
+  if (cep.length !== 8) {
+    freteEl.textContent = 'Digite os 8 números do CEP.';
+    return;
+  }
+  freteEl.textContent = 'Calculando…';
+  try {
+    const f = await chamar(`cotar-frete?cep=${cep}`);
+    if (!f.atende) {
+      state.frete = null;
+      entregaEl.hidden = true;
+      freteEl.innerHTML = `Ainda não entregamos em ${esc([f.endereco.bairro, f.endereco.cidade].filter(Boolean).join(", "))}. ` +
+        '<a href="https://wa.me/5511948177429" target="_blank" rel="noopener">Chama a gente no WhatsApp</a>.';
+    } else {
+      state.frete = f;
+      freteEl.innerHTML = `<strong>${brl(f.frete_centavos)}</strong> · entrega ${esc(f.prazo)} (${esc(f.regiao)})`;
+      $('logradouro').value = f.endereco.logradouro || $('logradouro').value;
+      $('bairro').value = f.endereco.bairro || $('bairro').value;
+      entregaEl.hidden = false;
+      (f.endereco.logradouro ? $('numero') : $('logradouro')).focus();
+    }
+  } catch (e) {
+    freteEl.textContent = e.message;
+  }
+  atualizar();
+}
+
+$('calcular-frete').addEventListener('click', calcularFrete);
+cepEl.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') { e.preventDefault(); calcularFrete(); }
+});
+
+$('telefone').addEventListener('input', (e) => {
+  const d = e.target.value.replace(/\D/g, '').slice(0, 11);
+  e.target.value = d.length > 6 ? `(${d.slice(0, 2)}) ${d.slice(2, d.length - 4)}-${d.slice(-4)}`
+    : d.length > 2 ? `(${d.slice(0, 2)}) ${d.slice(2)}` : d;
+});
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  erroEl.textContent = '';
+  if (!state.frete) { calcularFrete(); return; }
+  if (!form.reportValidity()) return;
+
+  const campos = ['logradouro', 'numero', 'complemento', 'bairro', 'nome', 'email', 'telefone', 'observacoes'];
+  const corpo = { quantidade: state.qtd, cep: state.frete.endereco.cep };
+  campos.forEach((c) => { corpo[c] = $(c).value.trim(); });
+
+  pagarEl.disabled = true;
+  pagarEl.textContent = 'Abrindo o pagamento…';
+  try {
+    const { pagamento_url } = await chamar('criar-pedido', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(corpo),
+    });
+    window.location.href = pagamento_url;
+  } catch (err) {
+    erroEl.textContent = err.message;
+    pagarEl.disabled = false;
+    pagarEl.textContent = 'Ir para o pagamento';
+  }
+});
+
+// Voltar do Mercado Pago pelo botão do navegador reabre a página como estava.
+window.addEventListener('pageshow', () => {
+  pagarEl.disabled = false;
+  pagarEl.textContent = 'Ir para o pagamento';
+});
 
 atualizar();
 
