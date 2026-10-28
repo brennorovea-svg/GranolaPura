@@ -98,48 +98,11 @@ if ('IntersectionObserver' in window) {
 
 document.getElementById('ano').textContent = new Date().getFullYear();
 
-// Tag da Neon Scripts: a placa liga uma vez quando aparece e depois, a cada
-// 2,6 a 6 s, pisca uma letra, o olho ou a placa toda, e às vezes rosa e azul trocam.
-// Só roda com a placa na tela e a aba visível.
-const neonTag = document.querySelector('.neon-tag');
-const semMovimento = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-if (neonTag && !semMovimento && 'IntersectionObserver' in window) {
-  const palavras = neonTag.querySelectorAll('.neon-tag__word');
-  const letras = neonTag.querySelectorAll('.neon-tag__word span');
-  let timer = null;
-
-  const piscar = (el) => {
-    el.classList.remove('is-blink');
-    void el.offsetWidth;
-    el.classList.add('is-blink');
-  };
-
-  const tick = () => {
-    if (!document.hidden) {
-      const r = Math.random();
-      if (r < 0.25) piscar(letras[Math.floor(Math.random() * letras.length)]);
-      else if (r < 0.45) { neonTag.classList.add('is-fecha'); setTimeout(() => neonTag.classList.remove('is-fecha'), 150); }
-      else if (r < 0.7) palavras.forEach(piscar);
-      else { palavras.forEach(piscar); neonTag.classList.toggle('is-azul'); }
-    }
-    timer = setTimeout(tick, 2600 + Math.random() * 3400);
-  };
-
-  neonTag.classList.add('is-off');
-  const observerNeon = new IntersectionObserver(([entrada]) => {
-    if (entrada.isIntersecting) {
-      if (neonTag.classList.contains('is-off')) {
-        neonTag.classList.replace('is-off', 'is-on');
-        timer = setTimeout(tick, 2400);
-      } else if (!timer) {
-        timer = setTimeout(tick, 2600);
-      }
-    } else {
-      clearTimeout(timer);
-      timer = null;
-    }
-  }, { threshold: 0.5 });
-  observerNeon.observe(neonTag);
-  window.addEventListener('pagehide', () => { clearTimeout(timer); observerNeon.disconnect(); });
-}
+/* Plaquinha Neon Scripts: pisca ao acender quando aparece na tela */
+(function(){var p=document.querySelector('.neon-link');if(!p||!('IntersectionObserver' in window))return;
+var o=new IntersectionObserver(function(e){if(e[0].isIntersecting){p.classList.remove('acende');void p.offsetWidth;p.classList.add('acende');}},{threshold:.6});o.observe(p);
+/* O olho pisca de vez em quando, só com a placa na tela */
+var visivel=false,calmo=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+new IntersectionObserver(function(e){visivel=e[0].isIntersecting;}).observe(p);
+if(!calmo)setInterval(function(){if(!visivel||Math.random()>.45)return;p.classList.add('fecha');setTimeout(function(){p.classList.remove('fecha');},150);},2600);
+})();
