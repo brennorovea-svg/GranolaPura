@@ -502,6 +502,17 @@ a:hover { color: var(--cranberry); }
   text-shadow: 0 0 10px var(--ns-glow), 0 0 30px var(--ns-glow), 0 0 80px var(--ns-glow);
 }
 
+/* Logo v3 (2026-10-28): E ao contrário e o O vira olho amendoado, íris na cor de SCRIPTS */
+.neon-tag__espelho { display: inline-block; transform: scaleX(-1); }
+.neon-tag__olho { display: inline-flex; align-items: center; width: .86em; height: 1em; margin: 0 .02em; }
+.neon-tag__olho svg { display: block; width: 100%; height: .86em; overflow: visible; filter: drop-shadow(0 0 3px var(--ns-glow)) drop-shadow(0 0 12px var(--ns-glow)); }
+.neon-tag__tubo { fill: none; stroke: var(--ns-tube); stroke-width: 13; stroke-linejoin: round; }
+.neon-tag__friso { fill: none; stroke: #1a0b33; stroke-width: 2.4; stroke-linejoin: round; opacity: .75; }
+.neon-tag__iris { fill: none; stroke: var(--ns-tubeB); stroke-width: 5.5; }
+.neon-tag__pupila { fill: var(--ns-tubeB); }
+.neon-tag__palpebra { transform-box: fill-box; transform-origin: center; transition: transform 140ms var(--ns-ease); }
+.neon-tag.is-fecha .neon-tag__palpebra { transform: scaleY(.06); transition-duration: 110ms; }
+
 /* SCRIPTS sempre ~1/3 de NEON e na cor oposta */
 .neon-tag__word--sub {
   font-size: .355em;
@@ -532,7 +543,7 @@ a:hover { color: var(--cranberry); }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .neon-tag, .neon-tag__sign { transition: none; }
+  .neon-tag, .neon-tag__sign, .neon-tag__palpebra { transition: none; }
   .neon-tag.is-off .neon-tag__plate { opacity: 1; }
   .neon-tag.is-on .neon-tag__plate, .neon-tag__word span.is-blink, .neon-tag__word.is-blink { animation: none; }
   .neon-tag:hover .neon-tag__sign, .neon-tag:active .neon-tag__sign { transform: none; }
