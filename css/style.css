@@ -538,6 +538,18 @@ a:hover { color: var(--cranberry); }
   .neon-tag:hover .neon-tag__sign, .neon-tag:active .neon-tag__sign { transform: none; }
 }
 
+/* Logo v3 da Neon Scripts: E ao contrário e o O vira um olho amendoado, íris na cor de SCRIPTS */
+.neon-tag .espelho { display: inline-block; transform: scaleX(-1); }
+.neon-tag .o-olho { display: inline-flex; align-items: center; width: .86em; height: 1em; margin: 0 .02em; }
+.neon-tag .olho-svg { display: block; width: 100%; height: .86em; overflow: visible; filter: drop-shadow(0 0 3px var(--ns-glow)) drop-shadow(0 0 12px var(--ns-glow)) drop-shadow(0 0 30px var(--ns-glow)); }
+.neon-tag .olho-svg .tubo { fill: none; stroke: var(--ns-tube); stroke-width: 13; stroke-linejoin: round; }
+.neon-tag .olho-svg .friso { fill: none; stroke: #1a0b33; stroke-width: 2.4; stroke-linejoin: round; opacity: .75; }
+.neon-tag .olho-svg .iris { fill: none; stroke: var(--ns-tubeB); stroke-width: 5.5; filter: drop-shadow(0 0 4px var(--ns-glowB)); }
+.neon-tag .olho-svg .pupila { fill: var(--ns-tubeB); filter: drop-shadow(0 0 6px var(--ns-glowB)); }
+.neon-tag .olho-svg .palpebra { transform-box: fill-box; transform-origin: center; transition: transform 140ms var(--ns-ease); }
+.neon-tag .o-olho.fecha .palpebra { transform: scaleY(.06); transition-duration: 110ms; }
+@media (prefers-reduced-motion: reduce) { .neon-tag .olho-svg .palpebra { transition: none; } }
+
 /* Reveal on scroll */
 
 .reveal { opacity: 0; transform: translateY(28px); transition: opacity .8s ease, transform .8s cubic-bezier(.2, .8, .2, 1); }
