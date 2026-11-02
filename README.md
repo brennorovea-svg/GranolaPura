@@ -34,7 +34,7 @@ O público não lê nem grava nenhuma tabela: tudo passa pelas funções, e a RL
 | `EMAIL_LOJA` | E-mail que recebe o aviso de pedido pago. |
 | `SITE_URL` | Opcional. Padrão: `https://www.granolapura.com.br`. |
 
-No Mercado Pago, cadastre o webhook com a URL `https://khjizxhjygtemxyqbsio.supabase.co/functions/v1/webhook-mercadopago` e o evento **Pagamentos**.
+No Mercado Pago, cadastre o webhook com a URL `https://cxcdcjkalgezcwxspzrq.supabase.co/functions/v1/webhook-mercadopago` e o evento **Pagamentos**.
 
 Para o painel: em Authentication › URL Configuration, use `https://www.granolapura.com.br` como Site URL e adicione `https://www.granolapura.com.br/painel.html` nas Redirect URLs. Depois convide a Lynda em Authentication › Users › Invite e cadastre o e-mail dela:
 
