@@ -349,6 +349,27 @@ a:hover { color: var(--cranberry); }
 .frete { margin: 0; min-height: 1.4em; font-size: 15px; font-weight: 400; }
 .frete:empty { display: none; }
 
+.opcoes-frete { display: grid; gap: 8px; }
+.opcoes-frete:empty { display: none; }
+.opcao-frete {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  grid-template-areas: "radio nome preco" "radio prazo preco";
+  align-items: center;
+  column-gap: 12px;
+  padding: 10px 14px;
+  border: 1.5px solid var(--ink);
+  border-radius: 12px;
+  background: var(--white);
+  font-weight: 400;
+  cursor: pointer;
+}
+.opcao-frete:has(input:checked) { background: var(--honey); border-width: 2px; }
+.opcao-frete input { grid-area: radio; width: 18px; height: 18px; accent-color: var(--ink); margin: 0; }
+.opcao-frete__nome { grid-area: nome; font-weight: 700; }
+.opcao-frete__prazo { grid-area: prazo; font-size: 13px; color: var(--muted); }
+.opcao-frete strong { grid-area: preco; font-size: 16px; font-variant-numeric: tabular-nums; }
+
 .entrega {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));

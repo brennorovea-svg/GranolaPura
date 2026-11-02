@@ -1,9 +1,11 @@
 // Grava o pedido e cria o pagamento no Mercado Pago (Checkout Pro).
-// Preço e frete são sempre recalculados aqui: o navegador só manda a quantidade e o CEP.
+// Preço e frete são sempre recalculados aqui: o navegador só manda a quantidade,
+// o CEP e o serviço de entrega escolhido.
 import { db } from '../_shared/db.ts';
-import { buscarEndereco, regiaoDoCep } from '../_shared/frete.ts';
+import { buscarEndereco } from '../_shared/frete.ts';
 import { cors, erro, json } from '../_shared/http.ts';
 import { novoCodigo, PRECO_CENTAVOS, PRODUTO, QTD_MAX, SITE_URL, soDigitos } from '../_shared/loja.ts';
+import { cotar, textoOpcao, textoPrazo } from '../_shared/melhorenvio.ts';
 
 const MP_ACCESS_TOKEN = Deno.env.get('MP_ACCESS_TOKEN');
 
@@ -33,8 +35,16 @@ Deno.serve(async (req) => {
 
   const endereco = await buscarEndereco(b.cep);
   if (!endereco) return erro('CEP não encontrado.');
-  const regiao = await regiaoDoCep(endereco.cep);
-  if (!regiao) return erro('Ainda não entregamos nesse CEP.');
+  // Cota de novo para o preço vir do Melhor Envio, e não do navegador.
+  let opcoes;
+  try {
+    opcoes = await cotar(endereco.cep, quantidade);
+  } catch (e) {
+    console.error(e);
+    return erro('Não conseguimos calcular o frete agora. Tente de novo em instantes.', 502);
+  }
+  const frete = opcoes.find((o) => o.id === Number(b.servico));
+  if (!frete) return erro('O frete mudou. Calcule de novo e escolha a entrega.', 409);
 
   // Alguns CEPs (cidades pequenas, CEP geral) vêm sem rua: aí vale o que o cliente digitou.
   const logradouro = endereco.logradouro || texto(b.logradouro);
@@ -45,10 +55,11 @@ Deno.serve(async (req) => {
     codigo: novoCodigo(),
     quantidade,
     preco_centavos: PRECO_CENTAVOS,
-    frete_centavos: regiao.frete_centavos,
-    total_centavos: quantidade * PRECO_CENTAVOS + regiao.frete_centavos,
-    regiao: regiao.nome,
-    prazo: regiao.prazo,
+    frete_centavos: frete.frete_centavos,
+    total_centavos: quantidade * PRECO_CENTAVOS + frete.frete_centavos,
+    regiao: textoOpcao(frete),
+    prazo: textoPrazo(frete),
+    servico_frete: frete.id,
     nome,
     email,
     telefone,
@@ -73,7 +84,7 @@ Deno.serve(async (req) => {
   const funcoes = `${Deno.env.get('SUPABASE_URL')}/functions/v1`;
   const itens = [
     { id: 'granola-200g', title: PRODUTO, quantity: quantidade, unit_price: PRECO_CENTAVOS / 100, currency_id: 'BRL' },
-    { id: 'entrega', title: `Entrega · ${regiao.nome}`, quantity: 1, unit_price: regiao.frete_centavos / 100, currency_id: 'BRL' },
+    { id: 'entrega', title: `Entrega · ${textoOpcao(frete)}`, quantity: 1, unit_price: frete.frete_centavos / 100, currency_id: 'BRL' },
   ].filter((i) => i.unit_price > 0);
 
   const r = await fetch('https://api.mercadopago.com/checkout/preferences', {

@@ -4,12 +4,14 @@ const PRECO = 1700; // centavos; o valor que vale é o das funções da loja
 const QTD_MAX = 20;
 const FUNCOES = window.LOJA.funcoes;
 
-const state = { qtd: 1, frete: null };
+// frete: resposta da cotação (endereço e opções); opcao: o serviço escolhido.
+const state = { qtd: 1, frete: null, opcao: null };
 
 const $ = (id) => document.getElementById(id);
 const form = $('order-form');
 const cepEl = $('cep');
 const freteEl = $('frete');
+const opcoesEl = $('opcoes-frete');
 const entregaEl = $('entrega');
 const erroEl = $('form-erro');
 const pagarEl = $('pagar');
@@ -22,14 +24,17 @@ function atualizar() {
   $('qtd').textContent = state.qtd;
   $('subtotal').textContent = brl(produtos);
   $('resumo-produtos').textContent = brl(produtos);
-  $('resumo-frete').textContent = state.frete ? brl(state.frete.frete_centavos) : '–';
-  $('resumo-total').textContent = state.frete ? brl(produtos + state.frete.frete_centavos) : '–';
+  const frete = state.opcao ? state.opcao.frete_centavos : null;
+  $('resumo-frete').textContent = frete === null ? '–' : brl(frete);
+  $('resumo-total').textContent = frete === null ? '–' : brl(produtos + frete);
 }
 
 document.querySelectorAll('[data-qty]').forEach((botao) => {
   botao.addEventListener('click', () => {
     state.qtd = Math.min(QTD_MAX, Math.max(1, state.qtd + Number(botao.dataset.qty)));
     atualizar();
+    // Mais pacotes, caixa maior: o frete precisa ser cotado de novo.
+    if (state.frete) calcularFreteDepois();
   });
 });
 
@@ -38,10 +43,7 @@ cepEl.addEventListener('input', () => {
   cepEl.value = d.length > 5 ? `${d.slice(0, 5)}-${d.slice(5)}` : d;
   // CEP mudou: o frete calculado antes não vale mais.
   if (state.frete && state.frete.endereco.cep !== cepEl.value) {
-    state.frete = null;
-    entregaEl.hidden = true;
-    freteEl.textContent = '';
-    atualizar();
+    limparFrete();
   }
   if (d.length === 8 && !state.frete) calcularFrete();
 });
@@ -53,6 +55,39 @@ async function chamar(funcao, opcoes) {
   return dados;
 }
 
+function limparFrete() {
+  state.frete = null;
+  state.opcao = null;
+  entregaEl.hidden = true;
+  freteEl.textContent = '';
+  opcoesEl.replaceChildren();
+  atualizar();
+}
+
+let esperaQtd = null;
+function calcularFreteDepois() {
+  clearTimeout(esperaQtd);
+  esperaQtd = setTimeout(calcularFrete, 500);
+}
+
+function mostrarOpcoes(opcoes) {
+  const escolhida = opcoes.find((o) => o.id === state.opcao?.id) ?? opcoes[0];
+  state.opcao = escolhida;
+  opcoesEl.replaceChildren(...opcoes.map((o) => {
+    const label = document.createElement('label');
+    label.className = 'opcao-frete';
+    label.innerHTML = '<input type="radio" name="servico"><span class="opcao-frete__nome"></span><span class="opcao-frete__prazo"></span><strong></strong>';
+    const radio = label.querySelector('input');
+    radio.value = o.id;
+    radio.checked = o === escolhida;
+    radio.addEventListener('change', () => { state.opcao = o; atualizar(); });
+    label.querySelector('.opcao-frete__nome').textContent = o.nome;
+    label.querySelector('.opcao-frete__prazo').textContent = o.prazo;
+    label.querySelector('strong').textContent = brl(o.frete_centavos);
+    return label;
+  }));
+}
+
 async function calcularFrete() {
   const cep = cepEl.value.replace(/\D/g, '');
   erroEl.textContent = '';
@@ -62,19 +97,22 @@ async function calcularFrete() {
   }
   freteEl.textContent = 'Calculando…';
   try {
-    const f = await chamar(`cotar-frete?cep=${cep}`);
+    const f = await chamar(`cotar-frete?cep=${cep}&qtd=${state.qtd}`);
     if (!f.atende) {
-      state.frete = null;
-      entregaEl.hidden = true;
+      limparFrete();
       freteEl.innerHTML = `Ainda não entregamos em ${esc([f.endereco.bairro, f.endereco.cidade].filter(Boolean).join(", "))}. ` +
         '<a href="https://wa.me/5511948177429" target="_blank" rel="noopener">Chama a gente no WhatsApp</a>.';
     } else {
+      const primeiraVez = !state.frete;
       state.frete = f;
-      freteEl.innerHTML = `<strong>${brl(f.frete_centavos)}</strong> · entrega ${esc(f.prazo)} (${esc(f.regiao)})`;
-      $('logradouro').value = f.endereco.logradouro || $('logradouro').value;
-      $('bairro').value = f.endereco.bairro || $('bairro').value;
-      entregaEl.hidden = false;
-      (f.endereco.logradouro ? $('numero') : $('logradouro')).focus();
+      freteEl.textContent = `Entrega para ${[f.endereco.bairro, f.endereco.cidade].filter(Boolean).join(', ')}:`;
+      mostrarOpcoes(f.opcoes);
+      if (primeiraVez) {
+        $('logradouro').value = f.endereco.logradouro || $('logradouro').value;
+        $('bairro').value = f.endereco.bairro || $('bairro').value;
+        entregaEl.hidden = false;
+        (f.endereco.logradouro ? $('numero') : $('logradouro')).focus();
+      }
     }
   } catch (e) {
     freteEl.textContent = e.message;
@@ -96,11 +134,11 @@ $('telefone').addEventListener('input', (e) => {
 form.addEventListener('submit', async (e) => {
   e.preventDefault();
   erroEl.textContent = '';
-  if (!state.frete) { calcularFrete(); return; }
+  if (!state.frete || !state.opcao) { calcularFrete(); return; }
   if (!form.reportValidity()) return;
 
   const campos = ['logradouro', 'numero', 'complemento', 'bairro', 'nome', 'email', 'telefone', 'observacoes'];
-  const corpo = { quantidade: state.qtd, cep: state.frete.endereco.cep };
+  const corpo = { quantidade: state.qtd, cep: state.frete.endereco.cep, servico: state.opcao.id };
   campos.forEach((c) => { corpo[c] = $(c).value.trim(); });
 
   pagarEl.disabled = true;

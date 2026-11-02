@@ -1,27 +1,30 @@
 import { assertEquals } from 'jsr:@std/assert@1';
-import { escolherRegiao, type Regiao } from './frete.ts';
+import { escolherOpcoes } from './melhorenvio.ts';
 import { assinaturaValida } from './mercadopago.ts';
 
-const regioes: Regiao[] = [
-  { nome: 'Capital', cep_inicio: 1000000, cep_fim: 5999999, frete_centavos: 1500, prazo: '2 dias' },
-  { nome: 'Capital', cep_inicio: 8000000, cep_fim: 8499999, frete_centavos: 1500, prazo: '2 dias' },
-  { nome: 'Grande SP', cep_inicio: 6000000, cep_fim: 9999999, frete_centavos: 2000, prazo: '3 dias' },
+// Trecho real de uma cotação do Melhor Envio (02/11/2026), resumido.
+const cotacao = [
+  { id: 1, name: 'PAC', company: { name: 'Correios' }, error: 'Transportadora não atende este trecho.' },
+  { id: 2, name: 'SEDEX', company: { name: 'Correios' }, price: '12.62', custom_price: '12.62', delivery_time: 1, custom_delivery_time: 2 },
+  { id: 4, name: '.Com', company: { name: 'Jadlog' }, price: '13.16', custom_price: '13.16', custom_delivery_time: 6 },
+  { id: 31, name: 'Express', company: { name: 'Loggi' }, price: '9.85', custom_price: '9.85', custom_delivery_time: 2 },
+  { id: 32, name: 'Loggi Ponto', company: { name: 'Loggi' }, price: '10.43', custom_price: '10.43', custom_delivery_time: 4 },
 ];
 
-Deno.test('CEP da capital usa a faixa da capital', () => {
-  assertEquals(escolherRegiao('05422-030', regioes)?.nome, 'Capital');
+Deno.test('Sem lista de serviços: as 3 opções mais baratas, sem as que deram erro', () => {
+  assertEquals(escolherOpcoes(cotacao, []).map((o) => o.id), [31, 32, 2]);
 });
 
-Deno.test('Zona Leste dentro da faixa da Grande SP fica com a capital (faixa mais estreita)', () => {
-  assertEquals(escolherRegiao('08210-000', regioes)?.nome, 'Capital');
+Deno.test('Preço em centavos e prazo combinado do Melhor Envio', () => {
+  assertEquals(escolherOpcoes(cotacao, [2])[0], { id: 2, empresa: 'Correios', servico: 'SEDEX', frete_centavos: 1262, prazo_dias: 2 });
 });
 
-Deno.test('Guarulhos cai na Grande SP', () => {
-  assertEquals(escolherRegiao('07010-000', regioes)?.frete_centavos, 2000);
+Deno.test('Lista de serviços fixa filtra e mantém a ordem por preço', () => {
+  assertEquals(escolherOpcoes(cotacao, [2, 31]).map((o) => o.id), [31, 2]);
 });
 
-Deno.test('Fora da área não atende', () => {
-  assertEquals(escolherRegiao('13010-000', regioes), null);
+Deno.test('Nenhuma transportadora atende: lista vazia', () => {
+  assertEquals(escolherOpcoes([cotacao[0]], []), []);
 });
 
 async function assinar(segredo: string, manifesto: string) {
