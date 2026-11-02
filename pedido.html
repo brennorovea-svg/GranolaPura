@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Seu pedido · Granola Pura</title>
+  <meta name="robots" content="noindex">
+  <meta name="theme-color" content="#D9AC72">
+  <link rel="icon" href="img/icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="pagina">
+  <header class="header">
+    <a href="./" aria-label="Granola Pura, início"><img src="img/logo.png" alt="Granola Pura" class="header__logo" width="333" height="400"></a>
+    <a href="./#pedido" class="btn btn--dark">Fazer pedido</a>
+  </header>
+
+  <main class="wrap pagina__main">
+    <section class="cartao" id="pedido" aria-live="polite">
+      <p class="serif pagina__kicker">acompanhe o seu pedido</p>
+      <h1 class="display" id="titulo">CARREGANDO…</h1>
+      <p class="pagina__texto" id="mensagem"></p>
+      <ol class="linha" id="linha" hidden></ol>
+      <dl class="resumo" id="resumo" hidden></dl>
+      <p class="form__note" id="rodape"></p>
+    </section>
+  </main>
+
+  <script src="js/config.js"></script>
+  <script src="js/pedido.js" defer></script>
+</body>
+</html>
