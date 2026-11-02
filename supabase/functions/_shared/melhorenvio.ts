@@ -34,16 +34,20 @@ async function chamar(caminho: string, init: RequestInit = {}) {
 
 let origemCache: { cep: string; ate: number } | null = null;
 
-// Endereço padrão da conta; guarda por 10 minutos para não consultar a cada CEP digitado.
+// Endereço padrão da conta (o marcado no painel); guarda por 10 minutos para não consultar a cada CEP digitado.
 export async function cepOrigem(): Promise<string> {
   const fixo = soDigitos(Deno.env.get('CEP_ORIGEM'));
   if (fixo.length === 8) return fixo;
   if (origemCache && origemCache.ate > Date.now()) return origemCache.cep;
 
-  const resposta = await chamar('/me/addresses');
-  const enderecos: any[] = Array.isArray(resposta) ? resposta : resposta.data ?? [];
-  const escolhido = enderecos.find((e) => e.default) ?? enderecos[0];
-  const cep = soDigitos(escolhido?.postal_code);
+  // /me traz o endereço marcado como padrão no painel; /me/addresses não diz qual é.
+  const perfil = await chamar('/me');
+  let cep = soDigitos(perfil?.address?.postal_code);
+  if (cep.length !== 8) {
+    const resposta = await chamar('/me/addresses');
+    const enderecos: any[] = Array.isArray(resposta) ? resposta : resposta.data ?? [];
+    cep = soDigitos(enderecos[0]?.postal_code);
+  }
   if (cep.length !== 8) throw new Error('Conta do Melhor Envio sem endereço cadastrado');
 
   origemCache = { cep, ate: Date.now() + 10 * 60 * 1000 };
@@ -88,5 +92,7 @@ export async function cotar(cepDestino: string, quantidade: number): Promise<Opc
   return escolherOpcoes(Array.isArray(resposta) ? resposta : []);
 }
 
-export const textoOpcao = (o: OpcaoFrete) => `${o.empresa} ${o.servico}`;
+// "Loggi" + "Loggi Ponto" vira "Loggi Ponto", e não "Loggi Loggi Ponto".
+export const textoOpcao = (o: OpcaoFrete) =>
+  o.servico.toLowerCase().startsWith(o.empresa.toLowerCase()) ? o.servico : `${o.empresa} ${o.servico}`;
 export const textoPrazo = (o: OpcaoFrete) => `até ${o.prazo_dias} ${o.prazo_dias === 1 ? 'dia útil' : 'dias úteis'}`;
